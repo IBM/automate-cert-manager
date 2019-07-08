@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
+const request = require('request');
 
 const gdKey = process.env.GODADDY_KEY
 const gdSecret = process.env.GODADDY_SECRET
@@ -42,7 +43,7 @@ router.post("/", function (req, res) {
       }
     })
     .catch(function (error) {
-      res.status(400).send({error});
+      res.status(400).send(error);
       return;
     })
 })
