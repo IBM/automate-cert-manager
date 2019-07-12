@@ -83,7 +83,7 @@ NAME                    HOST/PORT                                               
 automate-cert-manager   automate-cert-manager-default.anthony-test-1-5290c8c8e5797924dc1ad5d1b85b37c0-0001.us-east.containers.appdomain.cloud             automate-cert-manager   8080-tcp           edge          None
 ```
 
-You can now put your route in the Callback URL of your certificate manager instance. https://`<your-route>`
+You can now put your route in the Callback URL of your certificate manager instance. https://`<your-route>`/callback
 
 ![callback](docs/callback-url.png)
 
