@@ -55,6 +55,7 @@ function main(params) {
     })
 }
 
+// DNS Provider specific
 function insertRecord(name, value) {
   const options = {
     method: 'PATCH',
@@ -84,6 +85,7 @@ function insertRecord(name, value) {
   })
 }
 
+// DNS Provider specific
 function getRecords() {
   const options = {
     method: 'GET',
@@ -103,6 +105,7 @@ function getRecords() {
   })
 }
 
+// DNS Provider specific
 function removeRecord(name, value) {
   return new Promise(function (resolve, reject) {
     // get current records

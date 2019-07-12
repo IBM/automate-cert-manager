@@ -89,3 +89,4 @@ typings/
 
 # env file
 openshift-auto-cert.env
+openwhisk-auto-cert.json
