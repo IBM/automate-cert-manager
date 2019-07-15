@@ -30,7 +30,7 @@ One example where you can deploy your callback service is in OpenShift. The foll
 
 To get started on the deployment, you will need to create an [IBM Cloud Certificate Manager](https://cloud.ibm.com/catalog/services/certificate-manager) instance. If your DNS provider is not godaddy, you will need to modify the code to use your DNS provider APIs (to modify DNS records such as adding and removing TXT records from your domain).
 
-Clone the repo https://github.com/AnthonyAmanse/automate-cert-manager. Get your Certificate manager CRN from the Certificate Manager dashboard and modify the `openshift-auto-cert.env.template` with your own values and rename it to `openshift-auto-cert.env`. Your CRN goes in the `ALLOWED_CM` value.
+Clone the repo https://github.com/IBM/automate-cert-manager. Get your Certificate manager CRN from the Certificate Manager dashboard and modify the `openshift-auto-cert.env.template` with your own values and rename it to `openshift-auto-cert.env`. Your CRN goes in the `ALLOWED_CM` value.
 
 ![allowed cm image](docs/allowed-cm.png)
 
@@ -46,7 +46,7 @@ ALLOWED_CM=crn:v1:bluemix:public:cloudcerts:us-south:a/123:123-456-567::
 Now you can deploy the app from the command line with your OpenShift CLI (make sure you are logged in)
 
 ```bash
-oc new-app https://github.com/AnthonyAmanse/automate-cert-manager --env-file=openshift-auto-cert.env
+oc new-app https://github.com/IBM/automate-cert-manager --env-file=openshift-auto-cert.env
 oc expose svc automate-cert-manager
 ```
 
