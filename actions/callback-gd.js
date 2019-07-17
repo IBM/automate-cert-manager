@@ -15,13 +15,13 @@ let gdSecret;
 let gdApiUrl;
 
 function main(params) {
-  gdKey = params.gdKey;
-  gdSecret = params.gdSecret;
-  gdApiUrl = "https://api.godaddy.com/v1/domains/" + params.gdDomain + "/records"
+  gdKey = params.GODADDY_KEY;
+  gdSecret = params.GODADDY_SECRET;
+  gdApiUrl = "https://api.godaddy.com/v1/domains/" + params.GODADDY_DOMAIN + "/records"
 
   const unverifiedData = jwt.decode(params.data);
   // allowed certificate manager instance set in action parameters
-  if (params.allowedCM != unverifiedData.instance_crn) {
+  if (params.ALLOWED_CM != unverifiedData.instance_crn) {
     return Promise.reject({
       statusCode: 403,
       headers: { 'Content-Type': 'application/json' },
@@ -29,7 +29,7 @@ function main(params) {
     });
   }
 
-  const certificateManagerApiUrl = "https://" + params.cmRegion + ".certificate-manager.cloud.ibm.com";
+  const certificateManagerApiUrl = "https://" + params.CM_REGION + ".certificate-manager.cloud.ibm.com";
   return getPublicKey(unverifiedData.instance_crn, certificateManagerApiUrl)
     .then(function (object) {
       return verifyAndDecode(params.data, object.publicKey)
