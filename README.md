@@ -1,36 +1,62 @@
-## Automating SSL/TLS Certificate renewal for web domains
+# Renew security certificates automatically for web domains
 
-Having SSL/TLS Certificates is an integral part of making your users establish secure communication with your application. When certificates are used, this enables HTTPS on your applications that ares using the domain name registered to the certificate. This makes all data transmitted to and from the server encrypted and ensures that no one can easily eavesdrop on your data in motion. Using certificates can prevent man-in-the-middle attacks in your communication between users' clients and your servers. Having certificates in your web application ensures that the data exchanged aren't tampered by anyone. In this digital world, it is important and one of the best practices that web applications use TLS certificates.
+These days, most applications use HTTPS. To make sure that your users establish secure communication with your application, Secure Sockets Layer (SSL) or Transport Layer Security (TLS) certificates play an integral role. When you use either of these certificates, you enable HTTPS on your applications that use the domain name registered to the certificate. Then all data transmitted to and from the server is encrypted. This approach ensures that no one can easily eavesdrop on your data in motion.
 
-### Obtaining SSL/TLS certificates
+Using certificates also can prevent man-in-the-middle attacks in your communication between the clients of your application users and your servers. Finally, using certificates in your web application ensures that no one tampers with the data that is exchanged. In this digital world, one of the most important security best practices is to make sure your web applications use TLS certificates, an updated, more secure version of SSL.
 
-To obtain SSL/TLS certificates, one must go through a Certificate Authority (CA). The Certificate Authority acts as a trusted third party that validates the requester of the certificate is the actual owner and has control over the domain. Operating systems and browsers has a list of CAs that are identified as trusted. This makes the green lock visible beside the URL that indicates the web application is using HTTPS.
+However, these certificates expire and need to be renewed. Are you looking for a way to ease the renewal of SSL or TLS certificates for your apps? This tutorial walks through how to automate the renewal for you apps, using examples from Red Hat OpenShift on IBM Cloud™.
 
-[Let's Encrypt](https://letsencrypt.org/) is one of the trusted Certificate Authorities that provides domain validated certificates that is trusted by most browsers. It uses [ACME](https://ietf-wg-acme.github.io/acme/draft-ietf-acme-acme.html) protocol for validation which sends you a [challenge](https://letsencrypt.org/docs/challenge-types/) to verify that you actually control your domain name. This service is widely used because it's easier and free to get a certificate from Let's Encrypt. One of the downsides of using this Certificate Authority is certificates issued are only good for 90 days. This means that you need to go through the process of getting a new certificate from them.  A problem that most users face is having an outage of their application because of expired certificates. Having to manually request certificates can be cumbersome especially when you need more than one domain. One good thing is that you can easily automate this process with the help of Let's Encrypt's Certbot or other open source software with integration of Let's Encrypt.
+## Prerequisites
+Before you begin, you need [a free IBM Cloud account](https://cloud.ibm.com/registration).
 
-### Using the Certbot client
+## Estimated time
+Completing this tutorial should take about 25 minutes.
 
-One simple way of getting a certificate through Let's Encrypt is running their Certbot client. You would need to do this manually every time you need new ones like when they expire. You can automate this by writing your own code that executes the certbot client every 90 days. It would also make it easier for you if your DNS provider supports APIs, that way you can complete the challenge without having to go through your DNS provider's website. You can get started with certbot [here](https://letsencrypt.org/getting-started/).
+## Obtain SSL or TLS certificates through certificate authorities
 
-### Automating with Kubernetes Ingress
+To obtain SSL or TLS certificates, you must go through a certificate authority (CA). The certificate authority acts as a trusted third party that validates the requester of the certificate is the actual owner and has control over the domain. Operating systems and browsers have a list of CAs that are identified as trusted. The green lock is then visible next to the URL, indicating that the web application is using HTTPS.
 
-If you're using Kubernetes and its Ingress resource, you may already be using SSL/TLS certificates on your Ingress resources. If you want to automate the provisioning and renewing of Let's Encrypt certificates with your Ingress resource, [cert-manager](https://github.com/jetstack/cert-manager) can easily be deployed in Kubernetes. cert-manager is a Kubernetes add-on that will automate the process of requesting a certificate and using them in your Ingress resources. This open source software will also complete the challenge for you. This means that you don't need any manual intervention on your DNS provider or application for completing the challenge. Once the certificate is issued, the certificate should show up as a Kubernetes secret in your environment. cert-manager will also keep it up to date as long as it is running.
+1. Use Let’s Encrypt
 
-### Automating with OpenShift Routes
+  [Let's Encrypt](https://letsencrypt.org/) is one of the trusted certificate authorities that provides domain validated certificates that are trusted by most browsers. It uses the Automatic Certificate Management Environment (ACME) protocol for validation, which sends a challenge to verify that you actually control your domain name. This service is widely used because it’s easy and free to get a certificate.
 
-For OpenShift users using Routes, another option they can use is [openshift-acme](https://github.com/tnozicka/openshift-acme). This works similar to cert-manager. It does the automating of provisioning certificates with the use of Routes. This makes it easier for developers request and attach certificates on their OpenShift's Routes. Since both cert-manager and openshift-acme are open source projects, you can take a look at the source code and modify them to fit your needs or even contribute back to their respective upstreams.
+  However, a downside of using this certificate authority is that certificates issued are only good for 90 days. You must go through the process of getting a new certificate. You might face an outage of your application because of expired certificates. Manually requesting certificates can be cumbersome, especially when you need more than one domain.
 
-### Using a Certificate Manager service
+  An advantage is that you can easily automate this process with the help of Let’s Encrypt’s Certbot or other open source software that integrates with Let’s Encrypt.
 
-IBM Cloud has a [Certificate Manager](https://cloud.ibm.com/apidocs/certificate-manager) service that helps you manage and deploy SSL/TLS certificates. The service lets your store your certificates and helps you by send you notifications when your certificates are about to expire. The service also lets you order certificates directly from Let's Encrypt. This could help your application prevent outages due to expired certificates. One good thing is the [available APIs](https://cloud.ibm.com/apidocs/certificate-manager) when you want to automate the process of provisioning or renewing your certificates. If you're already using IBM Cloud Internet Services as your DNS provider, you can easily order certificates with Let's Encrypt through the Certificate Manager service. For other DNS providers, you'll need to setup your own callback URL service to receive the challenge sent by Let's Encrypt. The Certificate Manager instance will use the callback URL you set when [events](https://cloud.ibm.com/apidocs/certificate-manager#notification-event-types) such as "Certificate domain validation required", "Ordered certificate issued", etc happen.
+2. Using the Certbot client
 
-#### Deploying in OpenShift
+  One simple way of getting a certificate through Let’s Encrypt is running the Certbot client. You need to run it manually every time you need new certificates, such as when they expire. You can automate this work by writing your own code that runs the Certbot client every 90 days. It’s easier if your DNS provider supports APIs, so you can complete the challenges without having to go through your DNS provider’s website. See [Getting Started documentation for Let’s Encrypt and Certbot](https://letsencrypt.org/getting-started/).
 
-One example where you can deploy your callback service is in OpenShift. The following example will use the Source-to-Image strategy of deploying an application in OpenShift. This allows OpenShift to directly pull from a GitHub repo and build and deploy it directly in the platform. This sample application is using Godaddy as its DNS provider as they provide free use of their APIs. Deploying it in OpenShift would make sense when you already widely use OpenShift to deploy your applications.
+## Automating with Kubernetes Ingress
 
-To get started on the deployment, you will need to create an [IBM Cloud Certificate Manager](https://cloud.ibm.com/catalog/services/certificate-manager) instance. If your DNS provider is not godaddy, you will need to modify the code to use your DNS provider APIs (to modify DNS records such as adding and removing TXT records from your domain).
+If you use Kubernetes and its [Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/#the-ingress-resource) resource, you might already be using SSL or TLS certificates on your Ingress resources. If you want to automate the provisioning and renewing of Let’s Encrypt certificates with your Ingress resource, you can easily deploy [cert-manager](https://github.com/jetstack/cert-manager) in Kubernetes. The Kubernetes add-on cert-manager automates the process of requesting and using certificates in your Ingress resources.
 
-Clone the repo https://github.com/IBM/automate-cert-manager. Get your Certificate manager CRN from the Certificate Manager dashboard and modify the `openshift-auto-cert.env.template` with your own values and rename it to `openshift-auto-cert.env`. Your CRN goes in the `ALLOWED_CM` value.
+This open source software completes your challenge: you don’t need any manual intervention on your DNS provider or application. After the certificate is issued, the certificate should show up as a Kubernetes secret in your environment. The cert-manager add-on also keeps it up to date, as long as it is running.
+
+## Automating with OpenShift Routes
+
+If you use OpenShift [routes](https://docs.openshift.com/enterprise/3.0/architecture/core_concepts/routes.html), consider using [openshift-acme](https://github.com/tnozicka/openshift-acme), which works similar to cert-manager. It automates provisioning certificates by using routes, which makes it easier to request and attach certificates on your OpenShift routes.
+
+Because both cert-manager and openshift-acme are open source projects, you can take a look at the source code and modify it to fit your needs. Or, you can even contribute back to the respective upstreams.
+
+## Use the Certificate Manager service
+
+IBM Cloud includes a [Certificate Manager](https://cloud.ibm.com/catalog/services/certificate-manager) service that helps you manage and deploy SSL or TLS certificates. The service lets your store your certificates and sends you notifications when your certificates are about to expire. The service also lets you order certificates directly from Let’s Encrypt, which could help your application prevent outages due to expired certificates.
+
+An advantage is you can use available APIs to automate the process of provisioning or renewing your certificates. If you’re already using IBM Cloud [Internet Services](https://cloud.ibm.com/catalog/services/internet-services) as your DNS provider, you can easily order certificates with Let’s Encrypt through the Certificate Manager service. For other DNS providers, you need to set up your own callback URL service to receive the challenge sent by Let’s Encrypt.
+
+The Certificate Manager instance uses the callback URL you set for events such as “Certificate domain validation required” and “Ordered certificate issued.”
+
+## An example of deploying in Red Hat OpenShift on IBM Cloud
+
+OpenShift is one example of where you can deploy your callback service. The following example uses the Source-to-Image strategy of deploying an application in OpenShift. OpenShift directly pulls from a GitHub repo and then builds and deploys it directly in the platform.
+
+The sample application in this section uses Godaddy as its DNS provider because it provides free use of its APIs. Deploying it in OpenShift make sense when you already widely use OpenShift to deploy your applications.
+
+1. To get started deploying, you need to create an IBM Cloud Certificate Manager instance. If your DNS provider is not Godaddy, you need to modify the code to use your DNS provider APIs (modify DNS records such as adding and removing TXT records from your domain).s
+
+2. Clone the [automate-cert-manager](https://github.com/IBM/automate-cert-manager) repo. Get your Certificate Manager CRN from the Certificate Manager dashboard, modify the `openshift-auto-cert.env.template` with your own values, and rename it as `openshift-auto-cert.env`. Your CRN goes in the `ALLOWED_CM` value, as shown in the following screen capture:
 
 ![allowed cm image](docs/allowed-cm.png)
 
@@ -43,14 +69,14 @@ CM_REGION=us-south
 ALLOWED_CM=crn:v1:bluemix:public:cloudcerts:us-south:a/123:123-456-567::
 ```
 
-Now you can deploy the app from the command line with your OpenShift CLI (make sure you are logged in)
+3. Now you can deploy the app from the command line with your OpenShift CLI. Make sure you are logged in, and run the following commands:
 
 ```bash
 oc new-app https://github.com/IBM/automate-cert-manager --env-file=openshift-auto-cert.env
 oc expose svc automate-cert-manager
 ```
 
-To check the status of the build and deployment, do `oc get pods` and you should get a result with something like this:
+4. To check the status of the build and deployment, run `oc get pods` and you should see a result like the following example:
 
 ```bash
 $ oc get pods
@@ -60,14 +86,13 @@ automate-cert-manager-1-build       0/1       Completed   0          4d
 automate-cert-manager-1-xs7gm       1/1       Running     0          4d
 ```
 
-You also need to enable HTTPS with the exposed route for the callback URL to work with Certificate Manager. To do this, edit the route:
+5. You must enable HTTPS with the exposed route for the callback URL to work with Certificate Manager. Edit the route:
 
 ```
 $ oc edit routes automate-cert-manager
 ```
 
-And add the lines `tls:`, `terminate: edge` under the key of `spec:` like:
-> _indents are important for a yaml file_
+6. Add the lines tls:, terminate: edge under the key spec: like the following example (indents are important for a yaml file):
 
 ```
 spec:
@@ -75,7 +100,7 @@ spec:
     termination: edge
 ```
 
-Now you can get the route with `oc get routes`.
+7. Get the route.
 
 ```
 oc get routes
@@ -83,17 +108,21 @@ NAME                    HOST/PORT                                               
 automate-cert-manager   automate-cert-manager-default.anthony-test-1-5290c8c8e5797924dc1ad5d1b85b37c0-0001.us-east.containers.appdomain.cloud             automate-cert-manager   8080-tcp           edge          None
 ```
 
-You can now put your route in the Callback URL of your certificate manager instance. https://`<your-route>`/callback
+8. Now you can put your route in the callback URL of your Certificate Manager instance, `https://<your-route>/callback`, as shown in the following screen capture:
 
 ![callback](docs/callback-url.png)
 
-You can now try ordering a certificate through the Certificate Manager dashboard. The status should go from `Order Pending` to `Valid`. After this, you can now download the certificates through the dashboard. You can also add more automation by using the [Certificate Manager APIs](https://cloud.ibm.com/apidocs/certificate-manager) to fetch the certificates and place them wherever you're using them such as in your load balancer.
+9. Try ordering a certificate through the Certificate Manager dashboard. The status should change from `Order Pending` to `Valid`. Then you can download the certificates through the dashboard. You can also add more automation by using the Certificate Manager APIs to fetch the certificates and place them wherever you use them (for example, in your load balancer). The following screen capture shows an example:
 
 ![order-status](docs/order-status.png)
 
-#### Deploying in Cloud Functions
+## An example of deploying in IBM Cloud Functions
 
-Some people would also like prefer to keep costs low and use serverless. Having it in serverless can also save developers time since they would not need to worry about the infrastructure behind their application. This example will use IBM Cloud Functions as the serverless platform. To do this in serverless, clone the repo used above and use and modify `openwhisk-auto-cert.json.template` instead. Then deploy it in IBM Cloud Functions:
+You might prefer to keep costs low and use serverless architecture. You save time because you don’t need to worry about the infrastructure behind your application. This example in this section uses [IBM Cloud Functions](https://cloud.ibm.com/functions) as the serverless platform.
+
+1. Clone the repo you used in the previous section and modify the openwhisk-auto-cert.json.template instead.
+
+2. Deploy it in Cloud Functions:
 
 ```
 $ ic fn action create callback-gd actions/callback-gd.js -P openwhisk-auto-cert.json --web true
@@ -104,8 +133,14 @@ ok: got action callback-gd
 https://us-south.functions.cloud.ibm.com/api/v1/web/QWERTY/default/callback-gd
 ```
 
-Then use the URL from `ic fn action get callback-gd -r` as your callback URL of your certificate manager instance.
+3. Use the URL from `ic fn action get callback-gd -r` as your callback URL for your certificate manager instance. Then you can proceed to ordering new certificates like the previous section.
 
-### Summary
+## Summary
 
-With the large amount of data being transmitted today, it is important to have SSL/TLS certificates in your applications especially when your users will have their personal information being exchanged. This makes your application have a secure communication between your users and your users will feel more comfortable in using your app because of the security HTTPS provide. They are also other Certificate Authorities that issue certificates that expire longer than 90 days. They do provide other means of validation like Organization Validation (OV) and Extended Validation (EV) compared to the Domain Validation (DV) from Let's Encrypt. For the users, it's always good to check if the application you're using is HTTPS enabled to ensure that no data can be snooped by others. For developers looking to automate their certificate renewal process for their domain, the ways mentioned above is a good starting point as Let's Encrypt can quickly issue a certificate without additional costs. Setting up a good automation for your certificates will ensure your app won't have an outage because of expired certificates. It also helps when your DNS provider has APIs so that you can automate the completion of the challenge by Let's Encrypt.
+With the large amount of data that is transmitted today, it is important to have SSL or TLS certificates in your applications, especially when the users of your application have personal information exchanged. This secure communication makes your users feel more comfortable because of the security HTTPS provides.
+
+Also consider that other certificate authorities issue certificates that expire later than 90 days. They provide other means of validation like organization validation (OV) and extended validation (EV), compared to the domain validation (DV) from Let’s Encrypt.
+
+For your users, ensure that others cannot access their data and check if the apps they use are HTTPS-enabled. If you want to automate your certificate renewal process for your domain, start with the ways described in this tutorial. Let’s Encrypt can quickly issue a certificate without additional costs. Setting up a good automation for your certificates ensures that your app won’t have an outage because of expired certificates. When your DNS provider has APIs, you can automate the completion of the challenge by Let’s Encrypt.
+
+Now that you know how to automate the provisioning and renewal of TLS certificates, you can enable HTTPS on your own web applications to ensure all your users’ data in transit is encrypted. You learned some tools to automate TLS certificates to avoid outages. With the help of tools like Certificate Manager, you can be certain that all your certificates are securely stored.
